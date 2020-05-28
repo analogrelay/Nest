@@ -1,0 +1,4 @@
+[*.{cs,vb}]
+
+# Formatting
+dotnet_sort_system_directives_first = true
