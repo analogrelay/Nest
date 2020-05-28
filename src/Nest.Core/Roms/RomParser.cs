@@ -1,14 +1,29 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Nest.Roms
 {
     // Based on http://wiki.nesdev.com/w/index.php/NES_2.0
     public static class RomParser
     {
-        private static ReadOnlySpan<byte> MagicNumber => new byte[] {
-            (byte)'N', (byte)'E', (byte)'S', 0x1A /* ASCII EOF */
-        };
+        public static async Task<Rom> LoadRomAsync(Stream input)
+        {
+            // Read the header
+            var headerBuf = new byte[16];
+            await input.ReadExactAsync(headerBuf);
+            var header = ParseHeader(headerBuf);
+
+            // Read PRG ROM banks
+            var prgRom = new byte[header.Program.RomBanks * RomHeader.ProgramRomBankSize];
+            await input.ReadExactAsync(prgRom);
+
+            // Read CHR ROM banks
+            var chrRom = new byte[header.Character.RomBanks * RomHeader.CharacterRomBankSize];
+            await input.ReadExactAsync(chrRom);
+
+            return new Rom(header, prgRom, chrRom);
+        }
 
         public static RomHeader ParseHeader(ReadOnlySpan<byte> data)
         {
@@ -21,7 +36,7 @@ namespace Nest.Roms
             }
 
             // Check for the magic number
-            if (!data.Slice(0, 4).SequenceEqual(MagicNumber))
+            if (!data.Slice(0, 4).SequenceEqual(RomHeader.MagicNumber))
             {
                 throw new InvalidDataException("Invalid Magic Number");
             }

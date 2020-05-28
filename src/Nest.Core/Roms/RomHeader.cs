@@ -1,8 +1,16 @@
+using System;
+
 namespace Nest.Roms
 {
     public struct RomHeader
     {
         public static readonly int Size = 16;
+        public static readonly int ProgramRomBankSize = 16 * 1024;
+        public static readonly int CharacterRomBankSize = 8 * 1024;
+
+        public static ReadOnlySpan<byte> MagicNumber => new byte[] {
+            (byte)'N', (byte)'E', (byte)'S', 0x1A /* ASCII EOF */
+        };
 
         public RomHeader(RomVersion version, MemorySizes program, MemorySizes character, int mapper, int submapper, CpuTimingMode cpuTiming, RomFlags flags, ConsoleType console, int consoleTypeDetail, int miscellaneousRomCount, int defaultExpansionDevice)
         {
