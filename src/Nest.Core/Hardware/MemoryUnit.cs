@@ -107,7 +107,8 @@ namespace Nest.Hardware
             // Read in a loop until we've read all the data
             var length = buffer.Length;
             var bufferOffset = 0;
-            while(length > 0) {
+            while (length > 0)
+            {
                 // Mirror the offset
                 offset = offset % _inner.Length;
 
@@ -139,7 +140,8 @@ namespace Nest.Hardware
             // Write in a loop until we've read all the data
             var length = buffer.Length;
             var bufferOffset = 0;
-            while(length > 0) {
+            while (length > 0)
+            {
                 // Mirror the offset
                 offset = offset % _inner.Length;
 

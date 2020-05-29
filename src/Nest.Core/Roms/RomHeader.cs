@@ -36,7 +36,7 @@ namespace Nest.Roms
         public RomFlags Flags { get; }
         public ConsoleType Console { get; }
         public int ConsoleTypeDetail { get; }
-        public int MiscellaneousRomCount{ get; }
+        public int MiscellaneousRomCount { get; }
         public int DefaultExpansionDevice { get; }
     }
 

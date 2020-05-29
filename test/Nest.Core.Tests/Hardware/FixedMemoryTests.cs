@@ -46,7 +46,8 @@ namespace Nest.Tests.Hardware
         }
 
         [Fact]
-        public void WriteUpdatesData() {
+        public void WriteUpdatesData()
+        {
             var mem = new FixedMemory(10);
             var buf = new byte[5] { 1, 2, 3, 4, 5 };
             mem.Write(2, buf.AsSpan());

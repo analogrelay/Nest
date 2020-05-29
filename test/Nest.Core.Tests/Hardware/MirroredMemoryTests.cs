@@ -26,7 +26,8 @@ namespace Nest.Tests.Hardware
         }
 
         [Fact]
-        public void ReadMirrorsAsManyTimesAsNecessaryToFillRead() {
+        public void ReadMirrorsAsManyTimesAsNecessaryToFillRead()
+        {
             var ram = CreateFixedMemory(5);
             var mem = new MirroredMemory(15, ram);
             var buf = new byte[10];
@@ -56,7 +57,8 @@ namespace Nest.Tests.Hardware
         }
 
         [Fact]
-        public void WriteMirrorsAsManyTimesAsNecessaryToFillWrite() {
+        public void WriteMirrorsAsManyTimesAsNecessaryToFillWrite()
+        {
             var ram = new FixedMemory(5);
             var mem = new MirroredMemory(20, ram);
             var buf = CreateData(15);

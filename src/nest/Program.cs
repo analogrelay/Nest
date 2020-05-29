@@ -6,7 +6,7 @@ namespace Nest.CommandLine
 {
     [Command("nest", Description = "NES Emulation tools for .NET")]
     [Subcommand(typeof(RomCommandGroup))]
-    internal class Program: CommandGroupBase
+    internal class Program : CommandGroupBase
     {
         static int Main(string[] args)
         {
@@ -22,11 +22,13 @@ namespace Nest.CommandLine
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Error.WriteLine(clex.Message);
                     return clex.ExitCode;
-                } finally {
+                }
+                finally
+                {
                     Console.ForegroundColor = oldFg;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var oldFg = Console.ForegroundColor;
                 try
@@ -35,7 +37,9 @@ namespace Nest.CommandLine
                     Console.Error.WriteLine("Unexpected exception!");
                     Console.Error.WriteLine(ex.ToString());
                     return 1;
-                } finally {
+                }
+                finally
+                {
                     Console.ForegroundColor = oldFg;
                 }
             }

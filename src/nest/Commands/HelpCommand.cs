@@ -26,7 +26,8 @@ namespace Nest.CommandLine.Commands
                     console.Error.WriteLine($"Unknown command '{Command}'.");
                     app.ShowHelp();
                 }
-                else {
+                else
+                {
                     command.ShowHelp();
                 }
             }
