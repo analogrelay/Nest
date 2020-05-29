@@ -20,13 +20,11 @@ namespace Nest.CommandLine.Commands
             }
 
             // Load the file and read 16 bytes
-            var buf = new byte[16];
             using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var read = 0;
-            while ((read = await stream.ReadAsync(buf, 0, 16)) < RomHeader.Size) ;
+            var rom = await RomParser.LoadRomAsync(stream);
 
             // Parse the header
-            var header = RomParser.ParseHeader(buf);
+            var header = rom.Header;
 
             console.WriteLine($"{header.Version} ROM");
             console.WriteLine("Program Memory:");
