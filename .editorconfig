@@ -2,3 +2,11 @@
 
 # Formatting
 dotnet_sort_system_directives_first = true
+
+# Naming
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_prefix_camel_case.required_prefix = _
+dotnet_naming_style.underscore_prefix_camel_case.capitalization = camel_case
+dotnet_naming_rule.private_fields_with_underscore_prefix_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_with_underscore_prefix_camel_case.style = underscore_prefix_camel_case

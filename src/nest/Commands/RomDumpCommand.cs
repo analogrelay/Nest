@@ -10,6 +10,7 @@ namespace Nest.CommandLine.Commands
     {
         [Argument(0, "<FILE>", "The ROM file to dump metadata for.")]
         public string FilePath { get; set; }
+
         internal async Task OnExecuteAsync(IConsole console)
         {
             void WriteSizes(MemorySizes sizes)
