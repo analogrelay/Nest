@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using Nest.Hardware;
+using Nest.Memory;
 using Xunit;
 
-namespace Nest.Tests.Hardware
+namespace Nest.Tests.Memory
 {
     public class VirtualMemoryTests
     {

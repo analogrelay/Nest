@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Nest.Hardware
+namespace Nest.Memory
 {
     public abstract class MemoryUnit
     {
@@ -15,26 +17,44 @@ namespace Nest.Hardware
     public class FixedMemory : MemoryUnit
     {
         private readonly Memory<byte> _content;
+        private readonly ILogger _logger;
 
         public override int Length => _content.Length;
         public Span<byte> Data => _content.Span;
         public bool CanRead { get; }
         public bool CanWrite { get; }
 
-        public FixedMemory(int size) : this(new byte[size], true, true)
+        public FixedMemory(int size) : this(NullLogger.Instance, new byte[size], true, true)
         {
         }
 
-        public FixedMemory(int size, bool canRead, bool canWrite) : this(new byte[size], canRead, canWrite)
+        public FixedMemory(int size, bool canRead, bool canWrite) : this(NullLogger.Instance, new byte[size], canRead, canWrite)
         {
         }
 
-        public FixedMemory(Memory<byte> initialContent) : this(initialContent, true, true)
+        public FixedMemory(Memory<byte> initialContent) : this(NullLogger.Instance, initialContent, true, true)
         {
         }
 
-        public FixedMemory(Memory<byte> initialContent, bool canRead, bool canWrite)
+        public FixedMemory(Memory<byte> initialContent, bool canRead, bool canWrite): this(NullLogger.Instance, initialContent, canRead, canWrite)
         {
+        }
+
+        public FixedMemory(ILogger logger, int size) : this(logger, new byte[size], true, true)
+        {
+        }
+
+        public FixedMemory(ILogger logger, int size, bool canRead, bool canWrite) : this(logger, new byte[size], canRead, canWrite)
+        {
+        }
+
+        public FixedMemory(ILogger logger, Memory<byte> initialContent) : this(logger, initialContent, true, true)
+        {
+        }
+
+        public FixedMemory(ILogger logger, Memory<byte> initialContent, bool canRead, bool canWrite)
+        {
+            _logger = logger;
             _content = initialContent;
             CanRead = canRead;
             CanWrite = canWrite;
@@ -57,6 +77,7 @@ namespace Nest.Hardware
                 throw new IndexOutOfRangeException("The read goes out of the bounds of the memory.");
             }
 
+            _logger.LogTrace(new EventId(0, "Reading"), "Reading ${Start:X4}-${End:X4} ({Length} bytes)", offset, offset + buffer.Length, buffer.Length)
             _content.Slice(offset, buffer.Length).Span.CopyTo(buffer);
         }
 
@@ -77,19 +98,18 @@ namespace Nest.Hardware
                 throw new IndexOutOfRangeException("The write goes out of the bounds of the memory.");
             }
 
+            _logger.LogTrace(new EventId(0, "Writing"), "Writing ${Start:X4}-${End:X4} ({Length} bytes)", offset, offset + buffer.Length, buffer.Length)
             buffer.CopyTo(_content.Slice(offset, buffer.Length).Span);
         }
     }
 
     public class MirroredMemory : MemoryUnit
     {
-        private MemoryUnit _inner;
+        private readonly MemoryUnit _inner;
         public override int Length { get; }
 
-        public MirroredMemory(int length, MemoryUnit inner)
+        public MirroredMemory(int length, MemoryUnit inner): this(length, inner)
         {
-            Length = length;
-            _inner = inner;
         }
 
         public override void Read(int offset, Span<byte> buffer)
@@ -160,8 +180,18 @@ namespace Nest.Hardware
     {
         private int _length;
         private SortedList<int, MemoryUnit> _memories = new SortedList<int, MemoryUnit>();
+        private readonly ILogger _logger;
 
         public override int Length => _length;
+
+        public VirtualMemory() : this(NullLogger.Instance)
+        {
+        }
+
+        public VirtualMemory(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         public void Attach(int offset, MemoryUnit unit)
         {
@@ -171,6 +201,11 @@ namespace Nest.Hardware
             {
                 if (mem.Key < end && offset < (mem.Key + mem.Value.Length))
                 {
+                    _logger.LogError(
+                        new EventId(0, "AttachedMemoryOverlapped"),
+                        "Failed to attach new memory unit '{Memory}' at ${Start:X4}. " +
+                        "It overlaps with existing unit '{ExistingMemory}' (${ExistingStart:X4}-${ExistingEnd:X4})",
+                        unit, offset, mem, mem.Key, mem.Key + mem.Value.Length);
                     throw new InvalidOperationException("Cannot attach memory as it would overlap with existing memory!");
                 }
 
@@ -185,6 +220,16 @@ namespace Nest.Hardware
 
             var lastMem = _memories.Last();
             _length = lastMem.Key + lastMem.Value.Length;
+
+            _logger.LogInformation(
+                new EventId(0, "AttachedMemory"),
+                "Attached new memory unit '{Memory}' at ${Start:X4}-${End:X4} ({Length} bytes). Total length is now {TotalLength} bytes",
+                unit, offset, offset + unit.Length, unit.Length, _length);
+
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogMemoryMap();
+            }
         }
 
         public void Detach(MemoryUnit unit)
@@ -198,6 +243,11 @@ namespace Nest.Hardware
 
             var lastMem = _memories.Last();
             _length = lastMem.Key + lastMem.Value.Length;
+
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogMemoryMap();
+            }
         }
 
         public override void Read(int offset, Span<byte> buffer)
@@ -277,6 +327,18 @@ namespace Nest.Hardware
                 {
                     return;
                 }
+            }
+        }
+
+        private void LogMemoryMap()
+        {
+            _logger.LogTrace(new EventId(0, "DumpingMemoryMap"), "Dumping memory map.");
+            foreach (var (start, mem) in _memories)
+            {
+                _logger.LogTrace(
+                    new EventId(0, "MemoryMapElement"),
+                    "{Memory} memory - ${Start:X4} - ${End:X4} ({Length} bytes)",
+                    mem, start, start + mem.Length, mem.Length);
             }
         }
     }
