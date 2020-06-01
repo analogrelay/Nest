@@ -1,4 +1,4 @@
-using static Nest.Hardware.Mos6502Opcode;
+using static Nest.Hardware.Mos6502Operation;
 using static Nest.Hardware.Mos6502AddressingMode;
 
 namespace Nest.Hardware
@@ -7,7 +7,7 @@ namespace Nest.Hardware
     {
         // Borrowed mostly from https://github.com/fogleman/nes/blob/6d86d3ba286ec0e81acea05423f60455c222035e/nes/cpu.go
         // Which is licensed under the MIT License: https://github.com/fogleman/nes/blob/6d86d3ba286ec0e81acea05423f60455c222035e/LICENSE.md
-        private static readonly Mos6502Opcode[] _opcodeTable = new Mos6502Opcode[] {
+        private static readonly Mos6502Operation[] _operationTable = new Mos6502Operation[] {
             BRK, ORA, KIL, SLO, NOP, ORA, ASL, SLO,
             PHP, ORA, ASL, ANC, NOP, ORA, ASL, SLO,
             BPL, ORA, KIL, SLO, NOP, ORA, ASL, SLO,

@@ -8,38 +8,30 @@ namespace Nest.Hardware
         public static Mos6502Instruction Decode(MemoryUnit memory, int offset)
         {
             var opcode = memory.ReadByte(offset);
-            var operandSize = _operandSizeTable[opcode];
-
-            var operand = operandSize switch
-            {
-                0 => 0,
-                1 => (int)memory.ReadByte(offset + 1),
-                2 => (int)memory.ReadUInt16BigEndian(offset + 1),
-                _ => throw new NotSupportedException("Operand size must be between 0 and 2 inclusive!"),
-            };
 
             return new Mos6502Instruction(
-                _opcodeTable[opcode],
+                opcode,
+                _operationTable[opcode],
                 _addressingModeTable[opcode],
                 _cycleCountTable[opcode],
-                operand);
+                _operandSizeTable[opcode]);
         }
     }
 
     public readonly struct Mos6502Instruction
     {
-        public Mos6502Instruction(Mos6502Opcode opcode, Mos6502AddressingMode addressingMode, int cycleCount, int operand)
+        public Mos6502Instruction(int opcode, Mos6502Operation operation, Mos6502AddressingMode addressingMode, int cycleCount)
         {
             Opcode = opcode;
+            Operation = operation;
             AddressingMode = addressingMode;
             CycleCount = cycleCount;
-            Operand = operand;
         }
 
-        public Mos6502Opcode Opcode { get; }
+        public int Opcode { get; }
+        public Mos6502Operation Operation { get; }
         public Mos6502AddressingMode AddressingMode { get; }
         public int CycleCount { get; }
-        public int Operand { get; }
     }
 
     public enum Mos6502AddressingMode
@@ -59,7 +51,7 @@ namespace Nest.Hardware
         IndirectIndexed,
     }
 
-    public enum Mos6502Opcode
+    public enum Mos6502Operation
     {
         ADC,
         AHX,
