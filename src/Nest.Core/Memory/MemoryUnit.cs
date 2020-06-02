@@ -77,7 +77,7 @@ namespace Nest.Memory
                 throw new IndexOutOfRangeException("The read goes out of the bounds of the memory.");
             }
 
-            _logger.LogTrace(new EventId(0, "Reading"), "Reading ${Start:X4}-${End:X4} ({Length} bytes)", offset, offset + buffer.Length, buffer.Length)
+            _logger.LogTrace(new EventId(0, "Reading"), "Reading ${Start:X4}-${End:X4} ({Length} bytes)", offset, offset + buffer.Length, buffer.Length);
             _content.Slice(offset, buffer.Length).Span.CopyTo(buffer);
         }
 
@@ -98,7 +98,7 @@ namespace Nest.Memory
                 throw new IndexOutOfRangeException("The write goes out of the bounds of the memory.");
             }
 
-            _logger.LogTrace(new EventId(0, "Writing"), "Writing ${Start:X4}-${End:X4} ({Length} bytes)", offset, offset + buffer.Length, buffer.Length)
+            _logger.LogTrace(new EventId(0, "Writing"), "Writing ${Start:X4}-${End:X4} ({Length} bytes)", offset, offset + buffer.Length, buffer.Length);
             buffer.CopyTo(_content.Slice(offset, buffer.Length).Span);
         }
     }
@@ -108,8 +108,10 @@ namespace Nest.Memory
         private readonly MemoryUnit _inner;
         public override int Length { get; }
 
-        public MirroredMemory(int length, MemoryUnit inner): this(length, inner)
+        public MirroredMemory(int length, MemoryUnit inner)
         {
+            Length = length;
+            _inner = inner;
         }
 
         public override void Read(int offset, Span<byte> buffer)

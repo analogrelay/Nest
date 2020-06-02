@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Nest.Memory;
 
 namespace Nest.Hardware
@@ -7,11 +8,24 @@ namespace Nest.Hardware
     public class Mos6502
     {
         public State CurrentState { get; private set; }
-        public VirtualMemory Memory { get; }
+        public MemoryUnit Memory { get; }
 
         private readonly ILogger<Mos6502> _logger;
 
-        public Mos6502(State initialState, VirtualMemory memory, ILoggerFactory loggerFactory)
+        public Mos6502(MemoryUnit memory) : this(State.PowerUp, memory, NullLoggerFactory.Instance)
+        {
+        }
+
+        public Mos6502(MemoryUnit memory, ILoggerFactory loggerFactory) : this(State.PowerUp, memory, loggerFactory)
+        {
+        }
+
+
+        public Mos6502(State initialState, MemoryUnit memory) : this(initialState, memory, NullLoggerFactory.Instance)
+        {
+        }
+
+        public Mos6502(State initialState, MemoryUnit memory, ILoggerFactory loggerFactory)
         {
             CurrentState = initialState;
             Memory = memory;
@@ -57,7 +71,8 @@ namespace Nest.Hardware
             ChangeState(newState);
         }
 
-        private void ChangeState(State newState) {
+        private void ChangeState(State newState)
+        {
             _logger.LogTrace(new EventId(0, "ChangingState"), "Changing state from {OldState} to {NewState}", CurrentState, newState);
             CurrentState = newState;
         }
@@ -113,11 +128,17 @@ namespace Nest.Hardware
 
             public override string ToString() =>
                 $"[A:${A:X2} X:${X:X2} Y:${Y:X2} PC:${PC:X4} S:${S:X2} P:${(byte)P:X2} ({P})]";
+
+            public State With(int? a = null, int? x = null, int? y = null, int? pc = null, int? s = null, Mos6502.Flags? p = null)
+            {
+                return new State(a ?? A, x ?? X, y ?? Y, pc ?? PC, s ?? S, p ?? P);
+            }
         }
 
         // http://wiki.nesdev.com/w/index.php/Status_flags
         public enum Flags
         {
+            None = 0b0000_0000,
             Carry = 0b0000_0001,
             Zero = 0b0000_0010,
             InterruptDisable = 0b0000_0100,
