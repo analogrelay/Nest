@@ -7,38 +7,39 @@ namespace Nest.Hardware
     {
         private static Mos6502.State Adc(int address, Mos6502.State currentState, MemoryUnit memory)
         {
-            // Read the value
-            var value = memory.ReadByte(address);
+            // ADC: A = A + M + P[Carry]
 
-            // Add it to the accumulator and return
-            var newA = currentState.A + value;
-            if ((currentState.P & Mos6502.Flags.Carry) != Mos6502.Flags.None)
-            {
-                newA += 1;
-            }
+            var m = memory.ReadByte(address);
+            var r = currentState.A + m + (int)(currentState.P & Mos6502.Flags.Carry);
 
             var newP = currentState.P;
-            if (newA > 0xFF)
-            {
-                newA = (byte)newA;
-                newP |= Mos6502.Flags.Carry;
-            }
-            else
-            {
-                newP ^= Mos6502.Flags.Carry;
-            }
 
-            if (newA == 0)
-            {
-                newP |= Mos6502.Flags.Zero;
-            }
+            // Carry out if r overflows
+            newP = r > 0xFF ? newP | Mos6502.Flags.Carry : newP ^ Mos6502.Flags.Carry;
+            newP = r == 0 ? newP | Mos6502.Flags.Zero : newP ^ Mos6502.Flags.Zero;
+            newP = (r & 0b1000_0000) != 0 ? newP | Mos6502.Flags.Negative : newP ^ Mos6502.Flags.Negative;
 
-            if ((newA & 0b1000_0000) != 0)
-            {
-                newP |= Mos6502.Flags.Negative;
-            }
+            // Check if the overflow bit should be set.
+            // The bit should be set when both A and M have the same sign bit, and R has a different sign bit.
+            // This indicates that signed addition overflowed and the sign bit is inaccurate.
+            // We set based on this truth table
+            // | # |      A      |      M      |      R      |    A ^ M    |    A ^ R    | Value |
+            // | 1 | 0b0xxx_xxxx | 0b0xxx_xxxx | 0b0xxx_xxxx | 0b0xxx_xxxx | 0b0xxx_xxxx |   F   |
+            // | 2 | 0b0xxx_xxxx | 0b0xxx_xxxx | 0b1xxx_xxxx | 0b0xxx_xxxx | 0b1xxx_xxxx |   T   |
+            // | 3 | 0b0xxx_xxxx | 0b1xxx_xxxx | 0b0xxx_xxxx | 0b1xxx_xxxx | 0b0xxx_xxxx |   F   |
+            // | 4 | 0b0xxx_xxxx | 0b1xxx_xxxx | 0b1xxx_xxxx | 0b1xxx_xxxx | 0b1xxx_xxxx |   F   |
+            // | 5 | 0b1xxx_xxxx | 0b0xxx_xxxx | 0b0xxx_xxxx | 0b1xxx_xxxx | 0b1xxx_xxxx |   F   |
+            // | 6 | 0b1xxx_xxxx | 0b0xxx_xxxx | 0b1xxx_xxxx | 0b1xxx_xxxx | 0b0xxx_xxxx |   F   |
+            // | 7 | 0b1xxx_xxxx | 0b1xxx_xxxx | 0b0xxx_xxxx | 0b0xxx_xxxx | 0b1xxx_xxxx |   T   |
+            // | 8 | 0b1xxx_xxxx | 0b1xxx_xxxx | 0b1xxx_xxxx | 0b0xxx_xxxx | 0b0xxx_xxxx |   F   |
+            // From the above, we can see that overflow is set in rows 2 and 7, when:
+            // * A^M has the sign bit clear
+            // * AND, A^R has the sign bit set.
+            newP = ((currentState.A ^ m) & 0x80) == 0 && ((currentState.A ^ r) & 0x80) == 0x80 ?
+                newP | Mos6502.Flags.Overflow :
+                newP ^ Mos6502.Flags.Overflow;
 
-            return currentState.With(a: newA, p: newP);
+            return currentState.With(a: (byte)r, p: newP);
         }
 
         private static Mos6502.State Ahx(int address, Mos6502.State currentState, MemoryUnit memory)
