@@ -12,33 +12,18 @@ namespace Nest.Tests.Hardware
             public class ImmediateMode
             {
                 [Fact]
-                public void NoCarry()
-                {
-                    var mem = CreateMemory((0x0000, new byte[] { 0x69, 0x42 }));
-                    var state = Mos6502.State.PowerUp.With(a: 0x24);
-                    var cpu = new Mos6502(state, mem);
-
-                    // Run!
-                    cpu.Step();
-
-                    // Check the end state
-                    Assert.Equal(0x66, cpu.CurrentState.A);
-                }
+                public void NoCarry() => new Mos6502TestBuilder()
+                    .WithMemory(0x0000, 0x69, 0x42)
+                    .WithInitialState(a: 0x24)
+                    .WithResultState(a: 0x66)
+                    .Run();
 
                 [Fact]
-                public void WithCarryIn()
-                {
-                    var mem = CreateMemory((0x0000, new byte[] { 0x69, 0x42 }));
-                    var state = Mos6502.State.PowerUp.With(a: 0x24, p: Mos6502.Flags.Carry);
-                    var cpu = new Mos6502(state, mem);
-
-                    // Run!
-                    cpu.Step();
-
-                    // Check the end state
-                    Assert.Equal(0x67, cpu.CurrentState.A);
-                    Assert.Equal(Mos6502.Flags.None, cpu.CurrentState.P & Mos6502.Flags.Carry);
-                }
+                public void WithCarryIn() => new Mos6502TestBuilder()
+                    .WithMemory(0x0000, 0x69, 0x42)
+                    .WithInitialState(a: 0x24, p: Mos6502.Flags.Carry)
+                    .WithResultState(a: 0x67)
+                    .Run();
 
                 [Fact]
                 public void SetsCarryFlagWhenResultOverflows()

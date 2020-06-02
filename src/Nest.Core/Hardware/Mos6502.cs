@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Nest.Memory;
@@ -78,10 +79,10 @@ namespace Nest.Hardware
         }
 
         // http://wiki.nesdev.com/w/index.php/CPU_registers
-        public readonly struct State
+        public readonly struct State : IEquatable<State>
         {
             public static readonly State PowerUp =
-                new State(a: 0, x: 0, y: 0, pc: 0, s: 0xFD, p: Flags.PushedByInstruction | Flags.PushedToStack | Flags.InterruptDisable);
+                new State(a: 0, x: 0, y: 0, pc: 0, s: 0xFD, p: Flags.Reserved | Flags.Break | Flags.InterruptDisable);
 
             public State(int a, int x, int y, int pc, int s, Flags p)
             {
@@ -126,13 +127,39 @@ namespace Nest.Hardware
             public int S { get; }
             public Mos6502.Flags P { get; }
 
+            public override bool Equals(object? obj) => obj is State state && Equals(state);
+
+            public bool Equals(State other) =>
+                       A == other.A &&
+                       X == other.X &&
+                       Y == other.Y &&
+                       PC == other.PC &&
+                       S == other.S &&
+                       P == other.P;
+
+            public override int GetHashCode() => HashCode.Combine(A, X, Y, PC, S, P);
+
             public override string ToString() =>
-                $"[A:${A:X2} X:${X:X2} Y:${Y:X2} PC:${PC:X4} S:${S:X2} P:${(byte)P:X2} ({P})]";
+                $"[A:${A:X2} X:${X:X2} Y:${Y:X2} PC:${PC:X4} S:${S:X2} P:${(byte)P:X2} ({Mos6502.GetFlagsString(P)})]";
 
             public State With(int? a = null, int? x = null, int? y = null, int? pc = null, int? s = null, Mos6502.Flags? p = null)
             {
                 return new State(a ?? A, x ?? X, y ?? Y, pc ?? PC, s ?? S, p ?? P);
             }
+        }
+
+        private static string GetFlagsString(Flags flags)
+        {
+            var builder = new StringBuilder();
+            builder.Append((flags & Flags.Carry) != 0 ? "C" : "c");
+            builder.Append((flags & Flags.Zero) != 0 ? "Z" : "z");
+            builder.Append((flags & Flags.InterruptDisable) != 0 ? "I" : "i");
+            builder.Append((flags & Flags.Decimal) != 0 ? "D" : "d");
+            builder.Append((flags & Flags.Break) != 0 ? "B" : "b");
+            builder.Append((flags & Flags.Reserved) != 0 ? "R" : "r");
+            builder.Append((flags & Flags.Overflow) != 0 ? "V" : "v");
+            builder.Append((flags & Flags.Negative) != 0 ? "N" : "n");
+            return builder.ToString();
         }
 
         // http://wiki.nesdev.com/w/index.php/Status_flags
@@ -146,10 +173,10 @@ namespace Nest.Hardware
             // Set ON the stack when the flags are pushed to the stack by an instruction
             // Clear ON the stack when the flags are pushed to the stack by an interrupt
             // Has no effect on the CPU.
-            PushedByInstruction = 0b0001_0000,
+            Break = 0b0001_0000,
             // Set ON the stack when the flags are pushed to the stack
             // Has no effect on the CPU
-            PushedToStack = 0b0010_0000,
+            Reserved = 0b0010_0000,
             Overflow = 0b0100_0000,
             Negative = 0b1000_0000
         }

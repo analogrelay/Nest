@@ -15,9 +15,9 @@ namespace Nest.Hardware
             var newP = currentState.P;
 
             // Carry out if r overflows
-            newP = r > 0xFF ? newP | Mos6502.Flags.Carry : newP ^ Mos6502.Flags.Carry;
-            newP = r == 0 ? newP | Mos6502.Flags.Zero : newP ^ Mos6502.Flags.Zero;
-            newP = (r & 0b1000_0000) != 0 ? newP | Mos6502.Flags.Negative : newP ^ Mos6502.Flags.Negative;
+            newP = r > 0xFF ? newP | Mos6502.Flags.Carry : newP & ~Mos6502.Flags.Carry;
+            newP = r == 0 ? newP | Mos6502.Flags.Zero : newP & ~Mos6502.Flags.Zero;
+            newP = (r & 0b1000_0000) != 0 ? newP | Mos6502.Flags.Negative : newP & ~Mos6502.Flags.Negative;
 
             // Check if the overflow bit should be set.
             // The bit should be set when both A and M have the same sign bit, and R has a different sign bit.
@@ -37,7 +37,7 @@ namespace Nest.Hardware
             // * AND, A^R has the sign bit set.
             newP = ((currentState.A ^ m) & 0x80) == 0 && ((currentState.A ^ r) & 0x80) == 0x80 ?
                 newP | Mos6502.Flags.Overflow :
-                newP ^ Mos6502.Flags.Overflow;
+                newP & ~Mos6502.Flags.Overflow;
 
             return currentState.With(a: (byte)r, p: newP);
         }
