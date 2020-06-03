@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Nest.Core.Tests
+namespace Nest
 {
     public class StreamExtensionsTests
     {

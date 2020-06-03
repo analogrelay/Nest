@@ -1,8 +1,7 @@
 using System;
-using Nest.Memory;
 using Xunit;
 
-namespace Nest.Tests.Memory
+namespace Nest.Memory
 {
     public class MirroredMemoryTests
     {

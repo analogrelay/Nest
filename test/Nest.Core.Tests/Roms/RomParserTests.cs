@@ -1,8 +1,7 @@
 using System.IO;
-using Nest.Roms;
 using Xunit;
 
-namespace Nest.Core.Tests
+namespace Nest.Roms
 {
     public class RomParserTests
     {

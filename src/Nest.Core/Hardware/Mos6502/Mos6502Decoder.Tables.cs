@@ -1,7 +1,7 @@
-using static Nest.Hardware.Mos6502Operation;
-using static Nest.Hardware.Mos6502AddressingMode;
+using static Nest.Hardware.Mos6502.Mos6502Operation;
+using static Nest.Hardware.Mos6502.Mos6502AddressingMode;
 
-namespace Nest.Hardware
+namespace Nest.Hardware.Mos6502
 {
     public static partial class Mos6502Decoder
     {

@@ -4,11 +4,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Nest.Memory;
 
-namespace Nest.Hardware
+namespace Nest.Hardware.Mos6502
 {
     public static partial class Mos6502Executor
     {
-        private delegate Mos6502.State InstructionExecutor(int address, Mos6502.State currentState, MemoryUnit memory);
+        private delegate Mos6502State InstructionExecutor(int address, Mos6502State currentState, MemoryUnit memory);
 
         private readonly static InstructionExecutor[] _executorsTable = new InstructionExecutor[] {
             Adc, Ahx, Alr, Anc, And, Arr, Asl, Axs,
@@ -23,7 +23,7 @@ namespace Nest.Hardware
             Txs, Tya, Xaa,
         };
 
-        public static Mos6502.State Execute(in Mos6502Instruction instruction, in Mos6502.State state, MemoryUnit memory, ILogger? logger = null)
+        public static Mos6502State Execute(in Mos6502Instruction instruction, in Mos6502State state, MemoryUnit memory, ILogger? logger = null)
         {
             logger ??= NullLogger.Instance;
 
@@ -44,7 +44,7 @@ namespace Nest.Hardware
             return newState;
         }
 
-        private static (int address, bool crossesPageBoundary) ResolveAddress(Mos6502AddressingMode addressingMode, in Mos6502.State state, MemoryUnit memory, ILogger logger)
+        internal static (int address, bool crossesPageBoundary) ResolveAddress(Mos6502AddressingMode addressingMode, in Mos6502State state, MemoryUnit memory, ILogger logger)
         {
             static (int address, bool crossesPageBoundary) ComputeOffset(int baseAddress, int offset)
             {
