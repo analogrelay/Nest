@@ -30,7 +30,7 @@ namespace Nest.Hardware.Mos6502
             logger.LogTrace("Executing {Instruction} (Current CPU State: {State})", instruction, state);
 
             // Resolve the address used to store the operand
-            var (address, crossesPageBoundary) = ResolveAddress(instruction.AddressingMode, state, memory, logger);
+            var (address, crossesPageBoundary) = ResolveAddress(instruction.AddressingMode, state, memory);
 
             // Look up the executor in the table
             Debug.Assert((int)instruction.Operation >= 0 && (int)instruction.Operation < _executorsTable.Length, "Operation has no entry in the executors table!");
@@ -44,7 +44,7 @@ namespace Nest.Hardware.Mos6502
             return newState;
         }
 
-        internal static (int address, bool crossesPageBoundary) ResolveAddress(Mos6502AddressingMode addressingMode, in Mos6502State state, MemoryUnit memory, ILogger logger)
+        internal static (int address, bool crossesPageBoundary) ResolveAddress(Mos6502AddressingMode addressingMode, in Mos6502State state, MemoryUnit memory)
         {
             static (int address, bool crossesPageBoundary) ComputeOffset(int baseAddress, int offset)
             {

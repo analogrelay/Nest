@@ -46,7 +46,14 @@ namespace Nest.Hardware.Mos6502
 
         private static Mos6502State Ahx(int address, Mos6502State currentState, MemoryUnit memory)
         {
-            throw new NotImplementedException();
+            // AHX is an unofficial opcode with odd behavior
+            // Based this test on https://github.com/anurse/remy/blob/4f01c0e16ac9b8db1553d97588c9d8927884cef1/src/hw/mos6502/exec/store.rs#L158
+            // I don't remember where I figured that behavior out then :(.
+            var highByte = (address & 0xFF00) >> 8;
+            var val = currentState.A & currentState.X & highByte;
+
+            memory.WriteByte(address, (byte)val);
+            return currentState;
         }
 
         private static Mos6502State Alr(int address, Mos6502State currentState, MemoryUnit memory)

@@ -195,6 +195,7 @@ namespace Nest.Memory
             _logger = logger;
         }
 
+        public void Attach(int offset, byte[] contents) => Attach(offset, new FixedMemory(contents));
         public void Attach(int offset, MemoryUnit unit)
         {
             // Check for overlap
