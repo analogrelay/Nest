@@ -12,14 +12,14 @@ namespace Nest.Hardware.Mos6502
             var m = memory.ReadByte(address);
             var r = currentState.A + m + (int)(currentState.P & Mos6502Flags.Carry);
 
-            var newP = currentState.P;
+            var flags = currentState.P;
 
             // Carry out if r overflows
-            newP = r > 0xFF ? newP | Mos6502Flags.Carry : newP & ~Mos6502Flags.Carry;
+            flags = flags.SetIf(r > 0xFF, Mos6502Flags.Carry);
             r = (byte)r;
 
-            newP = r == 0 ? newP | Mos6502Flags.Zero : newP & ~Mos6502Flags.Zero;
-            newP = (r & 0b1000_0000) != 0 ? newP | Mos6502Flags.Negative : newP & ~Mos6502Flags.Negative;
+            flags = flags.SetIf(r == 0, Mos6502Flags.Zero);
+            flags = flags.SetIf((r & 0b1000_0000) != 0, Mos6502Flags.Negative);
 
             // Check if the overflow bit should be set.
             // The bit should be set when both A and M have the same sign bit, and R has a different sign bit.
@@ -37,11 +37,11 @@ namespace Nest.Hardware.Mos6502
             // From the above, we can see that overflow is set in rows 2 and 7, when:
             // * A^M has the sign bit clear
             // * AND, A^R has the sign bit set.
-            newP = ((currentState.A ^ m) & 0x80) == 0 && ((currentState.A ^ r) & 0x80) == 0x80 ?
-                newP | Mos6502Flags.Overflow :
-                newP & ~Mos6502Flags.Overflow;
+            flags = ((currentState.A ^ m) & 0x80) == 0 && ((currentState.A ^ r) & 0x80) == 0x80 ?
+                flags | Mos6502Flags.Overflow :
+                flags & ~Mos6502Flags.Overflow;
 
-            return currentState.With(a: r, p: newP);
+            return currentState.With(a: r, p: flags);
         }
 
         private static Mos6502State Ahx(int address, Mos6502State currentState, MemoryUnit memory)
@@ -68,7 +68,13 @@ namespace Nest.Hardware.Mos6502
 
         private static Mos6502State And(int address, Mos6502State currentState, MemoryUnit memory)
         {
-            throw new NotImplementedException();
+            var value = memory.ReadByte(address);
+            var r = (byte)(value & currentState.A);
+
+            var flags = currentState.P;
+            flags = flags.SetIf(r == 0, Mos6502Flags.Zero);
+            flags = flags.SetIf((r & 0b1000_0000) != 0, Mos6502Flags.Negative);
+            return currentState.With(a: r, p: flags);
         }
 
         private static Mos6502State Arr(int address, Mos6502State currentState, MemoryUnit memory)
@@ -78,7 +84,30 @@ namespace Nest.Hardware.Mos6502
 
         private static Mos6502State Asl(int address, Mos6502State currentState, MemoryUnit memory)
         {
-            throw new NotImplementedException();
+            var operand = address == 0 ? currentState.A : memory.ReadByte(address);
+            var r = operand << 1;
+
+            var flags = currentState.P;
+
+            flags = flags.SetIf(r > 0xFF, Mos6502Flags.Carry);
+            r = (byte)r;
+
+            // Set Zero flag **only** if the accumulator changes to zero.
+            if (address == 0)
+            {
+                flags = flags.SetIf(r == 0, Mos6502Flags.Zero);
+            }
+            flags = flags.SetIf((r & 0b1000_0000) != 0, Mos6502Flags.Negative);
+
+            if (address == 0)
+            {
+                return currentState.With(a: (byte)r, p: flags);
+            }
+            else
+            {
+                memory.WriteByte(address, (byte)r);
+                return currentState.With(p: flags);
+            }
         }
 
         private static Mos6502State Axs(int address, Mos6502State currentState, MemoryUnit memory)
@@ -88,7 +117,11 @@ namespace Nest.Hardware.Mos6502
 
         private static Mos6502State Bcc(int address, Mos6502State currentState, MemoryUnit memory)
         {
-            throw new NotImplementedException();
+            if (!currentState.P.IsSet(Mos6502Flags.Carry))
+            {
+                return currentState.With(pc: address);
+            }
+            return currentState;
         }
 
         private static Mos6502State Bcs(int address, Mos6502State currentState, MemoryUnit memory)

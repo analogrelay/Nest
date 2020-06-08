@@ -55,9 +55,9 @@ namespace Nest.Hardware.Mos6502
         }
 
         public Mos6502TestBuilder WithResultState(
-            int? a = null, int? x = null, int? y = null, int? pc = null, int? s = null, Mos6502Flags p = Mos6502Flags.None)
+            int? a = null, int? x = null, int? y = null, int? pc = null, int? s = null, Mos6502Flags p = Mos6502Flags.PowerUp)
         {
-            ResultState = Mos6502State.PowerUp.With(a, x, y, pc, s, p: Mos6502Flags.PowerUp | p);
+            ResultState = Mos6502State.PowerUp.With(a, x, y, pc, s, p: p);
             return this;
         }
 

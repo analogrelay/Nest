@@ -36,8 +36,11 @@ namespace Nest.Hardware.Mos6502
             Debug.Assert((int)instruction.Operation >= 0 && (int)instruction.Operation < _executorsTable.Length, "Operation has no entry in the executors table!");
             var executor = _executorsTable[(int)instruction.Operation];
 
+            // Advance the PC to the end of the instruction
+            var newState = state.With(pc: state.PC + instruction.InstructionSize);
+
             // Execute!
-            var newState = executor(address, state, memory);
+            newState = executor(address, newState, memory);
 
             logger.LogDebug("Executed {Instruction} (New CPU State: {State})", instruction, newState);
 

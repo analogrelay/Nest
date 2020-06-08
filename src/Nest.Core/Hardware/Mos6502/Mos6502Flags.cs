@@ -38,5 +38,16 @@ namespace Nest.Hardware.Mos6502
             builder.Append((flags & Mos6502Flags.Negative) != 0 ? "N" : "n");
             return builder.ToString();
         }
+
+        // Utility methods.
+        // Some simple examples (see sharplab link below) indicate that these methods
+        // should be inlined during JIT (even without AggressiveInlining) so it seems
+        // reasonable to have these utilities.
+        // See https://sharplab.io/#v2:C4LghgzgtgPgAgJgIwFgBQcAMACOSB0ASgK4B2wAllAKb4DCA9lAA4UA21ATgMpcBuFAMbUIAbnToA2gDE2YAOYQAuujgBmbNVLEo2ALIMIANgCsmBLIUR0Ab3TYH2AHINS1bAF5smAEaZ/mAD6AZgANPaOdGCcnACent5+AcH+SOFojtgAWlwMCb4hKUhhEQ4AkuRcnMTMwAAiFBBgPhz5Sf7BxSUZjnXUglRgbG2FXWHYAPQTzgzA2MQQ1AAm2K7OAKLcpZk7u3sOU9i8cwDyTtjAABbuEMBgggDW2ADu16QX19gAZnKK2NHuZgLa4rYB5K43O6PbA+eJgd4UUi3aqCSiubb7TG7Q50DjRbBnD6Q+5PV5aInfX4Qf6cQHA5YXcGfW4kmFwhGVGI1YAYrF8ybTAASkGwpDy1C+X36czWEOwdAACgBVfDbABCtLATy8BVSKX86Uyh2OBPOcpZ0LJ7zlPysNLpEBBjIpFoe20OwupYs0kulq2tn0VSu2hBE/AZOqSxX13UyJz4XB+DGeIy6McNjic1HkYEoCbaY3TEh6DgVya4SuYCVDi04CZWMGwGuoWuwjYqwCq3IaTRa1HSAF9i+pcEgjLgENh1tg7GhDo5JHpqFcGEsyiw2AAKJcrtcbk61CiuCD4ACC8nktIgEAoCYqbERiPkAEoVCXcBo8OODMYzBYqUcy5lF8m5XI0+iGKY5iWH8iJAsAoQwgwDDDIIrhLBQaKkIhP5Qf+dpgscz6eAAfLyDhoaQGFYdgAD82BwcQcyNoRy7YCADGkPB2AAGTYAAfqxwDiGgQ5oKon6TnQM7bCOX4Qb+0EAUqiw7pcq6boicx8EMOGQX+MHUraijEbO+xwAA7JSVj4McwGbjpwweDqemKfhij4DknAMM+ImZGJmSyZ+Y4KXhhnYPeiLUJp5DYI5rlhQBjHAKZ5G4FZjmeDqdGcdxja4QZVKebk7G5UxvECQVSk2V5DB+Y4YkDkAA==
+        public static Mos6502Flags Set(this Mos6502Flags val, Mos6502Flags toSet) => val | toSet;
+        public static Mos6502Flags Clear(this Mos6502Flags val, Mos6502Flags toClear) => val & ~toClear;
+        public static Mos6502Flags SetIf(this Mos6502Flags val, bool condition, Mos6502Flags flag) =>
+            condition ? val.Set(flag) : val.Clear(flag);
+        public static bool IsSet(this Mos6502Flags val, Mos6502Flags flag) => (val & flag) != 0;
     }
 }

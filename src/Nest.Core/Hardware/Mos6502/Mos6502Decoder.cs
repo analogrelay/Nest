@@ -13,7 +13,8 @@ namespace Nest.Hardware.Mos6502
                 (int)opcode,
                 _operationTable[opcode],
                 _addressingModeTable[opcode],
-                _cycleCountTable[opcode]);
+                _cycleCountTable[opcode],
+                _instructionSizeTable[opcode]);
         }
     }
 }
