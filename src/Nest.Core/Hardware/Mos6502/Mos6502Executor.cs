@@ -12,16 +12,16 @@ namespace Nest.Hardware.Mos6502
 
         private readonly static InstructionExecutor[] _executorsTable = new InstructionExecutor[] {
             Adc, Ahx, Alr, Anc, And, Arr, Asl, Axs,
-            BranchIfClear(Mos6502Flags.Carry), // Bcc
-            BranchIfSet(Mos6502Flags.Carry), // Bcs
-            BranchIfSet(Mos6502Flags.Zero), // Beq
+            BranchIf(set: false, Mos6502Flags.Carry), // Bcc
+            BranchIf(set: true, Mos6502Flags.Carry), // Bcs
+            BranchIf(set: true, Mos6502Flags.Zero), // Beq
             Bit,
-            BranchIfSet(Mos6502Flags.Negative), // Bmi
-            BranchIfClear(Mos6502Flags.Zero), // Bne
-            BranchIfClear(Mos6502Flags.Negative), // Bpl
+            BranchIf(set: true, Mos6502Flags.Negative), // Bmi
+            BranchIf(set: false, Mos6502Flags.Zero), // Bne
+            BranchIf(set: false, Mos6502Flags.Negative), // Bpl
             Brk,
-            BranchIfClear(Mos6502Flags.Overflow), // Bvc
-            BranchIfSet(Mos6502Flags.Overflow), // Bvs
+            BranchIf(set: false, Mos6502Flags.Overflow), // Bvc
+            BranchIf(set: true, Mos6502Flags.Overflow), // Bvs
             Clc, Cld, Cli, Clv, Cmp, Cpx,
             Cpy, Dcp, Dec, Dex, Dey, Eor, Inc, Inx,
             Iny, Isc, Jmp, Jsr, Kil, Las, Lax, Lda,
@@ -45,8 +45,12 @@ namespace Nest.Hardware.Mos6502
             Debug.Assert((int)instruction.Operation >= 0 && (int)instruction.Operation < _executorsTable.Length, "Operation has no entry in the executors table!");
             var executor = _executorsTable[(int)instruction.Operation];
 
-            // Advance the PC to the end of the instruction
-            var newState = state.With(pc: state.PC + instruction.InstructionSize);
+            // Advance the PC to the end of the instruction and update clock
+            var cycles = instruction.CycleCount;
+            if(crossesPageBoundary) {
+                cycles += 1;
+            }
+            var newState = state.With(pc: state.PC + instruction.InstructionSize, clock: state.Clock + cycles);
 
             // Execute!
             newState = executor(address, newState, memory);

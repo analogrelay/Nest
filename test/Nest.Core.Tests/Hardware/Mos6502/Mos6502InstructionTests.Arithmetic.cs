@@ -79,7 +79,7 @@ namespace Nest.Hardware.Mos6502
             public void ShiftsAccumulatorLeft() => new Mos6502TestBuilder()
                 .WithMemory(0x0000, 0x0A)
                 .WithInitialState(a: 0b0000_1111)
-                .WithResultState(a: 0b0001_1110, pc: 0x01, clock: 1)
+                .WithResultState(a: 0b0001_1110, pc: 0x01, clock: 2)
                 .Run();
                 
             [Fact]
@@ -87,7 +87,7 @@ namespace Nest.Hardware.Mos6502
                 .WithMemory(0x0000, 0x0E, 0x02, 0xD0)
                 .WithMemory(0xD000, 0xAB, 0xCD, 0b0000_1111)
                 .WithInitialState()
-                .WithResultState(pc: 0x03, clock: 2)
+                .WithResultState(pc: 0x03, clock: 6)
                 .ExpectWrite(0xD002, 0b0001_1110)
                 .Run();
 
@@ -95,14 +95,14 @@ namespace Nest.Hardware.Mos6502
             public void CarryOut() => new Mos6502TestBuilder()
                 .WithMemory(0x0000, 0x0A)
                 .WithInitialState(a: 0b1011_0000)
-                .WithResultState(a: 0b0110_0000, pc: 0x01, p: Mos6502Flags.PowerUp | Mos6502Flags.Carry, clock: 1)
+                .WithResultState(a: 0b0110_0000, pc: 0x01, p: Mos6502Flags.PowerUp | Mos6502Flags.Carry, clock: 2)
                 .Run();
 
             [Fact]
             public void SetsZeroFlagIfAccumulatorBecomesZero() => new Mos6502TestBuilder()
                 .WithMemory(0x0000, 0x0A)
                 .WithInitialState(a: 0b1000_0000)
-                .WithResultState(a: 0x00, pc: 0x01, p: Mos6502Flags.PowerUp | Mos6502Flags.Zero | Mos6502Flags.Carry, clock: 1)
+                .WithResultState(a: 0x00, pc: 0x01, p: Mos6502Flags.PowerUp | Mos6502Flags.Zero | Mos6502Flags.Carry, clock: 2)
                 .Run();
 
             [Fact]
@@ -110,7 +110,7 @@ namespace Nest.Hardware.Mos6502
                 .WithMemory(0x0000, 0x0E, 0x02, 0xD0)
                 .WithMemory(0xD000, 0xAB, 0xCD, 0b1000_0000)
                 .WithInitialState()
-                .WithResultState(pc: 0x03, p: Mos6502Flags.PowerUp | Mos6502Flags.Carry, clock: 2)
+                .WithResultState(pc: 0x03, p: Mos6502Flags.PowerUp | Mos6502Flags.Carry, clock: 6)
                 .ExpectWrite(0xD002, 0x00)
                 .Run();
 
@@ -119,7 +119,7 @@ namespace Nest.Hardware.Mos6502
                 .WithMemory(0x0000, 0x0E, 0x02, 0xD0)
                 .WithMemory(0xD000, 0xAB, 0xCD, 0b0100_0000)
                 .WithInitialState()
-                .WithResultState(pc: 0x03, p: Mos6502Flags.PowerUp | Mos6502Flags.Negative, clock: 2)
+                .WithResultState(pc: 0x03, p: Mos6502Flags.PowerUp | Mos6502Flags.Negative, clock: 6)
                 .ExpectWrite(0xD002, 0b1000_0000)
                 .Run();
         }

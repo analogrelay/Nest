@@ -115,11 +115,25 @@ namespace Nest.Hardware.Mos6502
             throw new NotImplementedException();
         }
 
-        private static InstructionExecutor BranchIfClear(Mos6502Flags flag) => 
-            (address, currentState, _) => currentState.P.IsSet(flag) ? currentState : currentState.With(pc: address);
+        private static InstructionExecutor BranchIf(bool set, Mos6502Flags flag)
+        {
+            return (address, currentState, _) =>
+            {
+                if (set == currentState.P.IsSet(flag))
+                {
+                    // The base cycle count has already been added to the clock
+                    // +1 if the condition was true (it was, if we're here)
+                    // +1 if the new address crosses a page boundary
+                    var cycles = (address & 0xFF00) != (currentState.PC & 0xFF00) ? 2 : 1;
 
-        private static InstructionExecutor BranchIfSet(Mos6502Flags flag) =>
-            (address, currentState, _) => currentState.P.IsSet(flag) ? currentState.With(pc: address) : currentState;
+                    return currentState.With(pc: address, clock: currentState.Clock + cycles);
+                }
+                else
+                {
+                    return currentState;
+                }
+            };
+        }
 
         private static Mos6502State Bit(int address, Mos6502State currentState, MemoryUnit memory)
         {

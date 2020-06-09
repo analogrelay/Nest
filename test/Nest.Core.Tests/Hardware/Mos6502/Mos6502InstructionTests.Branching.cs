@@ -30,10 +30,26 @@ namespace Nest.Hardware.Mos6502
 
             [Theory]
             [MemberData(nameof(Branches))]
+            public void TakesTwoCyclesIfConditionFalseEvenIfOffsetCrossesBoundary(string mnemonic, byte opcode, Mos6502Flags flag, bool branchIfSet) => new Mos6502TestBuilder()
+                .WithMemory(0x0000, opcode, 0xFE)
+                .WithInitialState(p: branchIfSet ? Mos6502Flags.None : flag)
+                .WithResultState(pc: 0x02, p: branchIfSet ? Mos6502Flags.None : flag, clock: 2)
+                .Run();
+
+            [Theory]
+            [MemberData(nameof(Branches))]
             public void AdvancesPCByOffsetIfConditionTrue(string mnemonic, byte opcode, Mos6502Flags flag, bool branchIfSet) => new Mos6502TestBuilder()
                 .WithMemory(0x0000, opcode, 0x42)
                 .WithInitialState(p: branchIfSet ? flag : Mos6502Flags.None)
                 .WithResultState(pc: 0x44, p: branchIfSet ? flag : Mos6502Flags.None, clock: 3)
+                .Run();
+
+            [Theory]
+            [MemberData(nameof(Branches))]
+            public void TakesFourCyclesIfConditionTrueAndCrossesBoundary(string mnemonic, byte opcode, Mos6502Flags flag, bool branchIfSet) => new Mos6502TestBuilder()
+                .WithMemory(0x00F0, opcode, 0x20)
+                .WithInitialState(pc: 0x00F0, p: branchIfSet ? flag : Mos6502Flags.None)
+                .WithResultState(pc: 0x0112, p: branchIfSet ? flag : Mos6502Flags.None, clock: 4)
                 .Run();
         }
     }

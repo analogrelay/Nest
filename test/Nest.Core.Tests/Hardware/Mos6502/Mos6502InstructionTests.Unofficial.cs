@@ -14,7 +14,7 @@ namespace Nest.Hardware.Mos6502
                 .WithMemory(0x0000, 0x9F, 0x01, 0x3C)
                 .WithMemory(0x3C00, new FixedMemory(10))
                 .WithInitialState(a: 0x3F, x: 0xF0)
-                .WithResultState(a: 0x3F, x: 0xF0, pc: 0x03)
+                .WithResultState(a: 0x3F, x: 0xF0, pc: 0x03, clock: 5)
                 .ExpectWrite(0x3C01, 0x30)
                 .Run();
         }
