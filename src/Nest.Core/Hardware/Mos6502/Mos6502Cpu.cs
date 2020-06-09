@@ -48,7 +48,8 @@ namespace Nest.Hardware.Mos6502
             ChangeMos6502State(new Mos6502State(
                 CurrentState.A, CurrentState.X, CurrentState.Y,
                 pc: newPc,
-                CurrentState.S, CurrentState.P
+                CurrentState.S, CurrentState.P,
+                clock: 0
             ));
         }
 

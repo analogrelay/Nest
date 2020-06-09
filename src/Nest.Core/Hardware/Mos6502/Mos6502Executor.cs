@@ -12,8 +12,17 @@ namespace Nest.Hardware.Mos6502
 
         private readonly static InstructionExecutor[] _executorsTable = new InstructionExecutor[] {
             Adc, Ahx, Alr, Anc, And, Arr, Asl, Axs,
-            Bcc, Bcs, Beq, Bit, Bmi, Bne, Bpl, Brk,
-            Bvc, Bvs, Clc, Cld, Cli, Clv, Cmp, Cpx,
+            BranchIfClear(Mos6502Flags.Carry), // Bcc
+            BranchIfSet(Mos6502Flags.Carry), // Bcs
+            BranchIfSet(Mos6502Flags.Zero), // Beq
+            Bit,
+            BranchIfSet(Mos6502Flags.Negative), // Bmi
+            BranchIfClear(Mos6502Flags.Zero), // Bne
+            BranchIfClear(Mos6502Flags.Negative), // Bpl
+            Brk,
+            BranchIfClear(Mos6502Flags.Overflow), // Bvc
+            BranchIfSet(Mos6502Flags.Overflow), // Bvs
+            Clc, Cld, Cli, Clv, Cmp, Cpx,
             Cpy, Dcp, Dec, Dex, Dey, Eor, Inc, Inx,
             Iny, Isc, Jmp, Jsr, Kil, Las, Lax, Lda,
             Ldx, Ldy, Lsr, Nop, Ora, Pha, Php, Pla,
@@ -79,7 +88,7 @@ namespace Nest.Hardware.Mos6502
                 case Mos6502AddressingMode.Indirect: return (memory.ReadUInt16LittleEndian(memory.ReadUInt16LittleEndian(state.PC + 1)), false);
                 case Mos6502AddressingMode.IndexedIndirect:
                     return (memory.ReadUInt16LittleEndian((int)memory.ReadByte(state.PC + 1) + state.X), false);
-                case Mos6502AddressingMode.IndirectIndexed: 
+                case Mos6502AddressingMode.IndirectIndexed:
                     return ComputeOffset(memory.ReadUInt16LittleEndian((int)memory.ReadByte(state.PC + 1)), state.Y);
                 default:
                     throw new NotSupportedException($"Unknown Addressing Mode: {addressingMode}.");

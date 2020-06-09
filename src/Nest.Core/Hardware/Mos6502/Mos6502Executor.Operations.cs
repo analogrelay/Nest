@@ -115,56 +115,18 @@ namespace Nest.Hardware.Mos6502
             throw new NotImplementedException();
         }
 
-        private static Mos6502State Bcc(int address, Mos6502State currentState, MemoryUnit memory)
-        {
-            if (!currentState.P.IsSet(Mos6502Flags.Carry))
-            {
-                return currentState.With(pc: address);
-            }
-            return currentState;
-        }
+        private static InstructionExecutor BranchIfClear(Mos6502Flags flag) => 
+            (address, currentState, _) => currentState.P.IsSet(flag) ? currentState : currentState.With(pc: address);
 
-        private static Mos6502State Bcs(int address, Mos6502State currentState, MemoryUnit memory)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Mos6502State Beq(int address, Mos6502State currentState, MemoryUnit memory)
-        {
-            throw new NotImplementedException();
-        }
+        private static InstructionExecutor BranchIfSet(Mos6502Flags flag) =>
+            (address, currentState, _) => currentState.P.IsSet(flag) ? currentState.With(pc: address) : currentState;
 
         private static Mos6502State Bit(int address, Mos6502State currentState, MemoryUnit memory)
         {
             throw new NotImplementedException();
         }
 
-        private static Mos6502State Bmi(int address, Mos6502State currentState, MemoryUnit memory)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Mos6502State Bne(int address, Mos6502State currentState, MemoryUnit memory)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Mos6502State Bpl(int address, Mos6502State currentState, MemoryUnit memory)
-        {
-            throw new NotImplementedException();
-        }
-
         private static Mos6502State Brk(int address, Mos6502State currentState, MemoryUnit memory)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Mos6502State Bvc(int address, Mos6502State currentState, MemoryUnit memory)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Mos6502State Bvs(int address, Mos6502State currentState, MemoryUnit memory)
         {
             throw new NotImplementedException();
         }

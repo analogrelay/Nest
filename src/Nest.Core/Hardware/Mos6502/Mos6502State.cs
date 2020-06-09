@@ -6,9 +6,9 @@ namespace Nest.Hardware.Mos6502
     public readonly struct Mos6502State : IEquatable<Mos6502State>
     {
         public static readonly Mos6502State PowerUp =
-            new Mos6502State(a: 0, x: 0, y: 0, pc: 0, s: 0xFD, p: Mos6502Flags.PowerUp);
+            new Mos6502State(a: 0, x: 0, y: 0, pc: 0, s: 0xFD, p: Mos6502Flags.PowerUp, clock: 0);
 
-        public Mos6502State(int a, int x, int y, int pc, int s, Mos6502Flags p)
+        public Mos6502State(int a, int x, int y, int pc, int s, Mos6502Flags p, int clock)
         {
             // PERF: Consider eliding bounds checks when internal operations are modifying the state.
             if (a > byte.MaxValue || a < byte.MinValue)
@@ -42,6 +42,7 @@ namespace Nest.Hardware.Mos6502
             PC = pc;
             S = s;
             P = p;
+            Clock = clock;
         }
 
         public int A { get; }
@@ -50,6 +51,7 @@ namespace Nest.Hardware.Mos6502
         public int PC { get; }
         public int S { get; }
         public Mos6502Flags P { get; }
+        public int Clock { get; }
 
         public override bool Equals(object? obj) => obj is Mos6502State state && Equals(state);
 
@@ -59,16 +61,17 @@ namespace Nest.Hardware.Mos6502
                    Y == other.Y &&
                    PC == other.PC &&
                    S == other.S &&
-                   P == other.P;
+                   P == other.P &&
+                   Clock == other.Clock;
 
-        public override int GetHashCode() => HashCode.Combine(A, X, Y, PC, S, P);
+        public override int GetHashCode() => HashCode.Combine(A, X, Y, PC, S, P, Clock);
 
         public override string ToString() =>
-            $"[A:${A:X2} X:${X:X2} Y:${Y:X2} PC:${PC:X4} S:${S:X2} P:${(byte)P:X2} ({P.ToDisplayString()})";
+            $"[A:${A:X2} X:${X:X2} Y:${Y:X2} PC:${PC:X4} S:${S:X2} P:${(byte)P:X2} ({P.ToDisplayString()}) Clock: {Clock}";
 
-        public Mos6502State With(int? a = null, int? x = null, int? y = null, int? pc = null, int? s = null, Mos6502Flags? p = null)
+        public Mos6502State With(int? a = null, int? x = null, int? y = null, int? pc = null, int? s = null, Mos6502Flags? p = null, int? clock = null)
         {
-            return new Mos6502State(a ?? A, x ?? X, y ?? Y, pc ?? PC, s ?? S, p ?? P);
+            return new Mos6502State(a ?? A, x ?? X, y ?? Y, pc ?? PC, s ?? S, p ?? P, clock ?? Clock);
         }
     }
 
