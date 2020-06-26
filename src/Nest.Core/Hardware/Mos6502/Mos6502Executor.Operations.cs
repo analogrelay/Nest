@@ -137,7 +137,16 @@ namespace Nest.Hardware.Mos6502
 
         private static Mos6502State Bit(int address, Mos6502State currentState, MemoryUnit memory)
         {
-            throw new NotImplementedException();
+            var m = memory.ReadByte(address);
+            var result = currentState.A & m;
+
+            var flags = currentState.P;
+
+            flags = flags.SetIf(result == 0, Mos6502Flags.Zero);
+            flags = flags.SetIf((result & 0b0100_0000) != 0, Mos6502Flags.Overflow);
+            flags = flags.SetIf((result & 0b1000_0000) != 0, Mos6502Flags.Negative);
+
+            return currentState.With(p: flags);
         }
 
         private static Mos6502State Brk(int address, Mos6502State currentState, MemoryUnit memory)

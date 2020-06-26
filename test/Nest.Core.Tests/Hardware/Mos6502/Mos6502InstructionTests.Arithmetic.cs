@@ -74,7 +74,8 @@ namespace Nest.Hardware.Mos6502
                 .Run();
         }
 
-        public class Asl {
+        public class Asl
+        {
             [Fact]
             public void ShiftsAccumulatorLeft() => new Mos6502TestBuilder()
                 .WithMemory(0x0000, 0x0A)
@@ -121,6 +122,33 @@ namespace Nest.Hardware.Mos6502
                 .WithInitialState()
                 .WithResultState(pc: 0x03, p: Mos6502Flags.PowerUp | Mos6502Flags.Negative, clock: 6)
                 .ExpectWrite(0xD002, 0b1000_0000)
+                .Run();
+        }
+
+        public class Bit
+        {
+            [Fact]
+            public void SetsZeroIfNoBitsInArgumentMatchA() => new Mos6502TestBuilder()
+                .WithMemory(0x0000, 0x24, 0x10)
+                .WithMemory(0x0010, 0b0101_0101)
+                .WithInitialState(a: 0b1010_1010)
+                .WithResultState(a: 0b1010_1010, pc: 0x02, p: Mos6502Flags.PowerUp | Mos6502Flags.Zero, clock: 3)
+                .Run();
+
+            [Fact]
+            public void OverflowIsSetToBit6OfResult() => new Mos6502TestBuilder()
+                .WithMemory(0x0000, 0x24, 0x10)
+                .WithMemory(0x0010, 0b0100_0000)
+                .WithInitialState(a: 0b0100_0000)
+                .WithResultState(a: 0b0100_0000, pc: 0x02, p: Mos6502Flags.PowerUp | Mos6502Flags.Overflow, clock: 3)
+                .Run();
+
+            [Fact]
+            public void NegativeIsSetToBit7OfResult() => new Mos6502TestBuilder()
+                .WithMemory(0x0000, 0x24, 0x10)
+                .WithMemory(0x0010, 0b1000_0000)
+                .WithInitialState(a: 0b1000_0000)
+                .WithResultState(a: 0b1000_0000, pc: 0x02, p: Mos6502Flags.PowerUp | Mos6502Flags.Negative, clock: 3)
                 .Run();
         }
     }
